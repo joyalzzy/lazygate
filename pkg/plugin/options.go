@@ -3,6 +3,7 @@ package plugin
 import (
 	"github.com/kasefuchs/lazygate/pkg/provider"
 	"github.com/kasefuchs/lazygate/pkg/provider/docker"
+	"github.com/kasefuchs/lazygate/pkg/provider/mcsm"
 	"github.com/kasefuchs/lazygate/pkg/provider/nomad"
 	"github.com/kasefuchs/lazygate/pkg/provider/pufferpanel"
 	"github.com/kasefuchs/lazygate/pkg/queue"
@@ -28,6 +29,7 @@ func DefaultOptions() *Options {
 		Providers: []provider.Provider{
 			&docker.Provider{},
 			&nomad.Provider{},
+			&mcsm.Provider{},
 			&pufferpanel.Provider{},
 		},
 	}
