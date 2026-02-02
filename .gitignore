@@ -22,3 +22,7 @@ docs/build/
 *.so
 *.dylib
 *.test
+pkg/client_test.go
+pkg/provider/mcsm/allocation_test.go
+configs/gate.mcsm.env
+configs/gate.mcsm.yaml
