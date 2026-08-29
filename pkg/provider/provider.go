@@ -22,4 +22,6 @@ type Provider interface {
 
 	AllocationGet(srv proxy.RegisteredServer) (Allocation, error) // AllocationGet returns matching Allocation.
 	AllocationList() ([]Allocation, error)                        // AllocationList returns all matching Allocation's.
+
+	ServerList() ([]proxy.ServerInfo, error) // ServerList returns all registered servers. Returns nil if not supported.
 }

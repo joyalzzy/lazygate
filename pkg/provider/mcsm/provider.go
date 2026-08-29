@@ -3,10 +3,15 @@ package mcsm
 import (
 	"context"
 	"fmt"
+	"net"
+	"os"
+	"slices"
+	"strconv"
 
 	"github.com/go-logr/logr"
 	"github.com/kasefuchs/lazygate/pkg/provider"
 	"go.minekube.com/gate/pkg/edition/java/proxy"
+	"go.minekube.com/gate/pkg/util/netutil"
 )
 
 var _ provider.Provider = (*Provider)(nil)
@@ -30,7 +35,12 @@ func (p *Provider) DefaultConfig() interface{} {
 }
 
 func (p *Provider) initClient() {
-	p.client = NewClient(p.ctx, p.config.BaseUrl, p.config.ApiKey, p.config.DaemonId)
+	client, err := NewClient(p.ctx, p.config.BaseUrl, p.config.ApiKey, p.config.DaemonId)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Error initalizing client: %v", err)
+		os.Exit(1)
+	}
+	p.client = client
 }
 
 func (p *Provider) Init(opt *provider.InitOptions) error {
@@ -62,6 +72,32 @@ func (p *Provider) AllocationGet(srv proxy.RegisteredServer) (provider.Allocatio
 	}
 
 	return nil, fmt.Errorf("no allocation found")
+}
+
+// ServerList returns all registered servers from MCSM with their configuration.
+func (p *Provider) ServerList() ([]proxy.ServerInfo, error) {
+	search, err := p.client.ServerSearch()
+	if err != nil {
+		return nil, err
+	}
+
+	var servers []proxy.ServerInfo
+	for _, inst := range search.Data.Data {
+		if !slices.Contains(inst.Config.Tag, "lazy") {
+			continue
+		}
+		if inst.Config.Nickname == "" || inst.Config.PingConfig.IP == "" || inst.Config.PingConfig.Port == 0 {
+			continue
+		}
+
+		addr := netutil.NewAddr(
+			net.JoinHostPort(inst.Config.PingConfig.IP, strconv.Itoa(inst.Config.PingConfig.Port)),
+			"tcp",
+		)
+		servers = append(servers, proxy.NewServerInfo(inst.Config.Nickname, addr))
+	}
+
+	return servers, nil
 }
 
 func (p *Provider) AllocationList() ([]provider.Allocation, error) {

@@ -34,13 +34,14 @@ func (a *Allocation) Start() error {
 func (a *Allocation) State() provider.AllocationState {
 	inst, err := a.client.GetInstance(a.item.instance.Id, a.client.daemon_id)
 	if err != nil {
-		fmt.Errorf("failed to get isntance for state %v", err)
+		return provider.AllocationStateUnknown
 	}
 	switch inst.Data.Status {
 	case 0:
 		return provider.AllocationStateStopped
 	case 3:
 		return provider.AllocationStateStarted
+	// will add these states in the future
 	case -1:
 	case 1:
 	case 2:

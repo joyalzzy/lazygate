@@ -90,6 +90,30 @@ func (p *Plugin) initProvider() error {
 	return fmt.Errorf("no such provider %s", p.config.Provider)
 }
 
+// initProviderServers registers servers defined in the provider configuration
+// that are not found in the gate proxy config.
+func (p *Plugin) initProviderServers() error {
+	servers, err := p.provider.ServerList()
+	if err != nil {
+		return err
+	}
+
+	for _, srv := range servers {
+		if p.proxy.Server(srv.Name()) != nil {
+			continue
+		}
+
+		if _, err := p.proxy.Register(srv); err != nil {
+			p.log.Error(err, "failed to register server", "server", srv.Name())
+			continue
+		}
+
+		p.log.Info("registered server", "server", srv.Name(), "addr", srv.Addr())
+	}
+
+	return nil
+}
+
 // initRegistry initializes new registry.
 func (p *Plugin) initRegistry() error {
 	p.registry = registry.NewRegistry(p.proxy, p.provider)
@@ -130,7 +154,6 @@ func (p *Plugin) initHandlers() error {
 	event.Subscribe(eventMgr, math.MaxInt, p.onDisconnectEvent)
 	event.Subscribe(eventMgr, math.MaxInt, p.onServerPreConnectEvent)
 	event.Subscribe(eventMgr, math.MaxInt, p.onServerRegistrationEvent)
-
 	return nil
 }
 
@@ -142,6 +165,9 @@ func (p *Plugin) Init() error {
 		return err
 	}
 	if err := p.initProvider(); err != nil {
+		return err
+	}
+	if err := p.initProviderServers(); err != nil {
 		return err
 	}
 	if err := p.initRegistry(); err != nil {

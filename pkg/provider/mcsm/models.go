@@ -68,7 +68,7 @@ type InstanceDetail struct {
 			} `json:"docker"`
 			PingConfig struct {
 				IP   string `json:"ip"`
-				Port int    `json:"port"`
+				Port string `json:"port"`
 				Type int    `json:"type"`
 			} `json:"pingConfig"`
 			ExtraServiceConfig struct {
@@ -197,7 +197,7 @@ type InstanceSearch struct {
 				OpenFrpStatus  bool          `json:"openFrpStatus"`
 				Latency        int           `json:"latency"`
 				AllocatedPorts []struct {
-					Host      int    `json:"host"`
+					Host      string `json:"host"`
 					Container int    `json:"container"`
 					Protocol  string `json:"protocol"`
 				} `json:"allocatedPorts"`

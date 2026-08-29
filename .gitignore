@@ -22,3 +22,5 @@ docs/build/
 *.so
 *.dylib
 *.test
+
+.env

@@ -82,3 +82,8 @@ func (p *Provider) AllocationList() ([]provider.Allocation, error) {
 
 	return allocs, nil
 }
+
+// ServerList returns all registered servers. Not supported, returns nil.
+func (p *Provider) ServerList() ([]proxy.ServerInfo, error) {
+	return nil, nil
+}

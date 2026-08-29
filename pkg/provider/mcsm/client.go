@@ -45,7 +45,7 @@ type Client struct {
 	base_url   string
 }
 
-func NewClient(ctx context.Context, baseUrl, api_key string, daemon_id string) *Client {
+func NewClient(ctx context.Context, baseUrl, api_key string, daemon_id string) (*Client, error) {
 	api_client := &http.Client{
 		Transport: &HeaderTransport{
 			Headers: map[string]string{
@@ -55,12 +55,18 @@ func NewClient(ctx context.Context, baseUrl, api_key string, daemon_id string) *
 			ApiKey: api_key,
 		},
 	}
+	req, _ := http.NewRequestWithContext(ctx, http.MethodGet, fmt.Sprintf("%s/api/overview", baseUrl), nil)
+	_, err := api_client.Do(req)
+	if err != nil {
+		return nil, fmt.Errorf("Could not initialize MCSM client: %w", err)
+	}
+
 	return &Client{
 		ctx:        ctx,
 		api_client: api_client,
 		daemon_id:  daemon_id,
 		base_url:   baseUrl,
-	}
+	}, nil
 }
 
 func (c *Client) ServerStop(id string, did string) error {
